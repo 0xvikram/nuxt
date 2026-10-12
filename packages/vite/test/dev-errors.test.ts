@@ -284,7 +284,7 @@ describe('createDevErrorReporter (runtime errors from the browser)', () => {
     nuxt.close()
   })
 
-  it('replays a runtime error to a ready page and on the same error', async () => {
+  it('replays a runtime error on the same error, but not to a page that loads later', async () => {
     const nuxt = createNuxt()
     const print = vi.fn()
     const reporter = createDevErrorReporter(nuxt, { print })
@@ -296,8 +296,9 @@ describe('createDevErrorReporter (runtime errors from the browser)', () => {
     listeners['nuxt:dev:client-error']!(error)
     await vi.waitFor(() => expect(send).toHaveBeenCalledTimes(1))
 
+    // a page that loads without raising the error is not the one the report is about
     listeners['nuxt:dev:error:ready']!(undefined, client)
-    expect(client.send).toHaveBeenCalledWith(send.mock.calls[0]![0])
+    expect(client.send).not.toHaveBeenCalled()
     listeners['nuxt:dev:client-error']!({ ...error })
     await vi.waitFor(() => expect(send).toHaveBeenCalledTimes(2))
     expect(new Set(send.mock.calls.map(([payload]) => JSON.stringify(payload))).size).toBe(1)

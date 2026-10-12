@@ -194,7 +194,8 @@ export function createDevErrorReporter (nuxt: Nuxt, options: { print: (rendered:
         }
       })
       hot?.on?.('nuxt:dev:error:ready', (_data: unknown, client) => {
-        if (pendingOverlay) {
+        // a runtime error is about the page that raised it, which reports it again if it loads into it
+        if (pendingOverlay && current?.kind === 'compile') {
           client.send(pendingOverlay)
         }
       })
